@@ -1,0 +1,110 @@
+const express = require('express');
+const mongoose = require('mongoose');
+const cors = require('cors');
+const noteRoutes = require('./routes/noteRoutes');
+const todoRoutes = require('./routes/todoRoutes');
+require('dotenv').config();
+
+const app = express();
+const PORT = process.env.PORT || 5000;
+const MONGO_URI = process.env.MONGO_URI;
+
+// Middleware
+app.use(cors());
+app.use(express.json());
+
+// Routes
+app.use('/api/notes', noteRoutes);
+app.use('/api/todos', todoRoutes);
+
+// Connect to MongoDB
+mongoose.connect(MONGO_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+  .then(() => console.log('Connected to MongoDB'))
+  .catch(err => console.error('MongoDB connection error:', err));
+
+// Start server
+app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
+
+const express = require('express');
+const Note = require('../models/Note');
+const router = express.Router();
+
+// Create a note
+router.post('/', async (req, res) => {
+  try {
+    const note = new Note(req.body);
+    await note.save();
+    res.status(201).json(note);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// Get all notes
+router.get('/', async (req, res) => {
+  try {
+    const notes = await Note.find();
+    res.json(notes);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+module.exports = router;
+
+const express = require('express');
+const Todo = require('../models/Todo');
+const router = express.Router();
+
+// Create a todo
+router.post('/', async (req, res) => {
+  try {
+    const todo = new Todo(req.body);
+    await todo.save();
+    res.status(201).json(todo);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// Get all todos
+router.get('/', async (req, res) => {
+  try {
+    const todos = await Todo.find();
+    res.json(todos);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Delete a todo
+router.delete('/:id', async (req, res) => {
+  try {
+    await Todo.findByIdAndDelete(req.params.id);
+    res.json({ message: 'Todo deleted' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+module.exports = router;
+
+const mongoose = require('mongoose');
+
+const noteSchema = new mongoose.Schema({
+  content: { type: String, required: true },
+}, { timestamps: true });
+
+module.exports = mongoose.model('Note', noteSchema);
+
+const mongoose = require('mongoose');
+
+const todoSchema = new mongoose.Schema({
+  task: { type: String, required: true },
+  completed: { type: Boolean, default: false },
+}, { timestamps: true });
+
+module.exports = mongoose.model('Todo', todoSchema);
+
+MONGO_URI=mongodb+srv://<username>:<password>@cluster0.mongodb.net/notesphere?retryWrites=true&w=majority
+PORT=5000
