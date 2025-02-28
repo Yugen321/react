@@ -1,0 +1,119 @@
+import React from 'react';
+import Note from './components/Note';
+import Todo from './components/Todo';
+import MusicPlayer from './components/MusicPlayer';
+import './styles.css';
+
+const App = () => {
+  return (
+    <div className="container">
+      <h1>NoteSphere</h1>
+      <Note />
+      <Todo />
+      <MusicPlayer />
+    </div>
+  );
+};
+
+export default App;
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+
+const Note = () => {
+  const [notes, setNotes] = useState([]);
+  const [content, setContent] = useState('');
+
+  const fetchNotes = async () => {
+    const res = await axios.get('/api/notes');
+    setNotes(res.data);
+  };
+
+  const saveNote = async () => {
+    await axios.post('/api/notes', { content });
+    setContent('');
+    fetchNotes();
+  };
+
+  useEffect(() => {
+    fetchNotes();
+  }, []);
+
+  return (
+    <div className="notes-section">
+      <h2>Lecture Notes</h2>
+      <textarea value={content} onChange={(e) => setContent(e.target.value)} placeholder="Write your notes here..." />
+      <button onClick={saveNote}>Save Note</button>
+      <div>
+        {notes.map(note => (
+          <div key={note._id} className="note-item">{note.content}</div>
+        ))}
+      </div>
+    </div>
+  );
+};
+
+export default Note;
+
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+
+const Todo = () => {
+  const [todos, setTodos] = useState([]);
+  const [task, setTask] = useState('');
+
+  const fetchTodos = async () => {
+    const res = await axios.get('/api/todos');
+    setTodos(res.data);
+  };
+
+  const addTodo = async () => {
+    await axios.post('/api/todos', { task });
+    setTask('');
+    fetchTodos();
+  };
+
+  const deleteTodo = async (id) => {
+    await axios.delete(`/api/todos/${id}`);
+    fetchTodos();
+  };
+
+  useEffect(() => {
+    fetchTodos();
+  }, []);
+
+  return (
+    <div className="todo-section">
+      <h2>To-Do List</h2>
+      <input type="text" value={task} onChange={(e) => setTask(e.target.value)} placeholder="Add a new task..." />
+      <button onClick={addTodo}>Add Task</button>
+      <ul>
+        {todos.map(todo => (
+          <li key={todo._id} className="todo-item">
+            {todo.task}
+            <button onClick={() => deleteTodo(todo._id)}>Done</button>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+};
+
+export default Todo;
+
+import React from 'react';
+
+const MusicPlayer = () => {
+  return (
+    <div className="music-section">
+      <h2>Relaxing Music</h2>
+      <div className="music-player">
+        <audio controls>
+          <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg" />
+          Your browser does not support the audio element.
+        </audio>
+      </div>
+    </div>
+  );
+};
+
+export default MusicPlayer;
